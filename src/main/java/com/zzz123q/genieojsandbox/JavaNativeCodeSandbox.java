@@ -27,6 +27,10 @@ public class JavaNativeCodeSandbox implements CodeSandbox {
 
     private static final Long TIME_OUT = 10000L;
 
+    private static final String SECURITY_MANAGER_CLASS_NAME = "DefaultSecurityManager";
+
+    private static final String SECURITY_MANAGER_PATH = "D:/oj/genie-oj-sandbox/src/main/resources/security";
+
     private static final List<String> blackList = Arrays.asList("Files", "exec");
 
     private static final WordTree WORD_TREE = new WordTree();
@@ -39,7 +43,7 @@ public class JavaNativeCodeSandbox implements CodeSandbox {
         JavaNativeCodeSandbox javaNativeCodeSandbox = new JavaNativeCodeSandbox();
 
         List<String> inpuList = Arrays.asList("1 2", "3 4");
-        String code = ResourceUtil.readStr("testCode/runFileError/Main.java", StandardCharsets.UTF_8);
+        String code = ResourceUtil.readStr("testCode/simpleComputeArgs/Main.java", StandardCharsets.UTF_8);
         // String code = ResourceUtil.readStr("testCode/simpleCompute/Main.java",
         // StandardCharsets.UTF_8);
         Long timeLimit = 1000L;
@@ -99,17 +103,19 @@ public class JavaNativeCodeSandbox implements CodeSandbox {
         // 3. 执行代码,得到输出结果
         List<ExecuteMessage> executeMessageList = new ArrayList<>();
         for (String input : inputList) {
-            String runCmd = String.format("java -Xmx256m -cp %s Main %s", userCodeParentPath, input);
+            String runCmd = String.format(
+                    "java -Xmx256m -cp %s;%s -Djava.security.manager=%s Main %s",
+                    userCodeParentPath, SECURITY_MANAGER_PATH, SECURITY_MANAGER_CLASS_NAME, input);
             try {
                 Process runProcess = Runtime.getRuntime().exec(runCmd);
 
                 new Thread(() -> {
                     try {
                         Thread.sleep(TIME_OUT);
+                        runProcess.destroy();
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                    runProcess.destroy();
                 }).start();
 
                 ExecuteMessage processMessage = ProcessUtil.getProcessMessage(runProcess, "运行");
@@ -140,7 +146,7 @@ public class JavaNativeCodeSandbox implements CodeSandbox {
         }
         if (outputList.size() == executeMessageList.size()) {
             if (maxTime <= timeLimit) {
-                executeCodeResponse.setStatus(2);
+                executeCodeResponse.setStatus(1);
             } else {
                 executeCodeResponse.setStatus(3);
             }

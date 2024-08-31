@@ -1,5 +1,3 @@
-package com.zzz123q.genieojsandbox.security;
-
 import java.security.Permission;
 
 /**
