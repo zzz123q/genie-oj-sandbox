@@ -46,14 +46,12 @@ public class JavaNativeCodeSandbox implements CodeSandbox {
         String code = ResourceUtil.readStr("testCode/simpleComputeArgs/Main.java", StandardCharsets.UTF_8);
         // String code = ResourceUtil.readStr("testCode/simpleCompute/Main.java",
         // StandardCharsets.UTF_8);
-        Long timeLimit = 1000L;
         String language = "java";
 
         ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
                 .code(code)
                 .language(language)
                 .inputList(inpuList)
-                .timeLimit(timeLimit)
                 .build();
         ExecuteCodeResponse executeCodeResponse = javaNativeCodeSandbox.executeCode(executeCodeRequest);
         System.out.println(executeCodeResponse);
@@ -69,8 +67,6 @@ public class JavaNativeCodeSandbox implements CodeSandbox {
     public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
         List<String> inputList = executeCodeRequest.getInputList();
         String code = executeCodeRequest.getCode();
-        String language = executeCodeRequest.getLanguage();
-        Long timeLimit = executeCodeRequest.getTimeLimit();
 
         // 检验代码中是否存在敏感操作
         FoundWord matchWord = WORD_TREE.matchWord(code);
@@ -145,11 +141,7 @@ public class JavaNativeCodeSandbox implements CodeSandbox {
             }
         }
         if (outputList.size() == executeMessageList.size()) {
-            if (maxTime <= timeLimit) {
-                executeCodeResponse.setStatus(1);
-            } else {
-                executeCodeResponse.setStatus(3);
-            }
+            executeCodeResponse.setStatus(1);
         } else {
             executeCodeResponse.setStatus(3);
         }

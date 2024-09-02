@@ -27,9 +27,4 @@ public class ExecuteCodeRequest {
      * 用户提交所用编程语言
      */
     private String language;
-
-    /**
-     * 程序执行时间限制
-     */
-    private Long timeLimit;
 }
