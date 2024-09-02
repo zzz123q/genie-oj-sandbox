@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.util.StopWatch;
 
@@ -33,31 +35,33 @@ public class ProcessUtil {
                 System.out.println(opName + "成功");
                 BufferedReader bufferedReader = new BufferedReader(
                         new InputStreamReader(process.getInputStream()));
-                StringBuilder sb = new StringBuilder();
+                List<String> outputStrList = new ArrayList<>();
                 String resultLine;
                 while ((resultLine = bufferedReader.readLine()) != null) {
-                    sb.append(resultLine).append("\n");
+                    outputStrList.add(resultLine);
                 }
-                executeMessage.setMessage(sb.toString());
+                executeMessage.setMessage(String.join("\n", outputStrList));
             } else {
                 System.out.println(opName + "失败,错误码:" + exitValue);
                 // 获取正常输出
                 BufferedReader bufferedReader = new BufferedReader(
                         new InputStreamReader(process.getInputStream()));
-                StringBuilder sb = new StringBuilder();
+                List<String> outputStrList = new ArrayList<>();
                 String resultLine;
                 while ((resultLine = bufferedReader.readLine()) != null) {
-                    sb.append(resultLine).append("\n");
+                    outputStrList.add(resultLine);
                 }
-                executeMessage.setMessage(sb.toString());
+                executeMessage.setMessage(String.join("\n", outputStrList));
+
                 // 获取错误输出
-                bufferedReader = new BufferedReader(
+                BufferedReader errorBufferedReader = new BufferedReader(
                         new InputStreamReader(process.getErrorStream()));
-                sb = new StringBuilder();
-                while ((resultLine = bufferedReader.readLine()) != null) {
-                    sb.append(resultLine).append("\n");
+                List<String> errorOutputStrList = new ArrayList<>();
+                String errorResultLine;
+                while ((errorResultLine = errorBufferedReader.readLine()) != null) {
+                    errorOutputStrList.add(errorResultLine);
                 }
-                executeMessage.setErrorMessage(sb.toString());
+                executeMessage.setErrorMessage(String.join("\n", errorOutputStrList));
             }
             stopWatch.stop();
             executeMessage.setTime(stopWatch.getLastTaskTimeMillis());

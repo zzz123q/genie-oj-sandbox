@@ -1,12 +1,12 @@
 package com.zzz123q.genieojsandbox;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
 import com.github.dockerjava.api.DockerClient;
@@ -23,8 +23,6 @@ import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.api.model.StreamType;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.DockerClientBuilder;
-import com.zzz123q.genieojsandbox.model.ExecuteCodeRequest;
-import com.zzz123q.genieojsandbox.model.ExecuteCodeResponse;
 import com.zzz123q.genieojsandbox.model.ExecuteMessage;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ArrayUtil;
@@ -32,29 +30,12 @@ import cn.hutool.core.util.ArrayUtil;
 /**
  * Java代码沙箱Docker实现
  */
+@Component
 public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
 
     private static final Long TIME_OUT = 5000L;
 
     private static final Boolean FIRST_INIT = false;
-
-    public static void main(String[] args) {
-        JavaDockerCodeSandbox javaDockerCodeSandbox = new JavaDockerCodeSandbox();
-
-        List<String> inpuList = Arrays.asList("1 2", "3 4");
-        String code = ResourceUtil.readStr("testCode/simpleComputeArgs/Main.java", StandardCharsets.UTF_8);
-        // String code = ResourceUtil.readStr("testCode/simpleCompute/Main.java",
-        // StandardCharsets.UTF_8);
-        String language = "java";
-
-        ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
-                .code(code)
-                .language(language)
-                .inputList(inpuList)
-                .build();
-        ExecuteCodeResponse executeCodeResponse = javaDockerCodeSandbox.executeCode(executeCodeRequest);
-        System.out.println(executeCodeResponse);
-    }
 
     @Override
     public List<ExecuteMessage> runUserCode(List<String> inputList, File userCodeFile) {
