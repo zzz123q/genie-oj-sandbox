@@ -141,6 +141,7 @@ public abstract class JavaCodeSandboxTemplate implements CodeSandbox {
             }
         }
 
+        log.info("程序运行结果为: {}", executeMessageList);
         return executeMessageList;
     }
 
@@ -167,7 +168,7 @@ public abstract class JavaCodeSandboxTemplate implements CodeSandbox {
             }
         }
         if (outputList.size() == executeMessageList.size()) {
-            executeCodeResponse.setStatus(1);
+            executeCodeResponse.setStatus(2);
         } else {
             executeCodeResponse.setStatus(3);
         }
@@ -178,6 +179,7 @@ public abstract class JavaCodeSandboxTemplate implements CodeSandbox {
         // judgeInfo.setMemory();
         executeCodeResponse.setJudgeInfo(judgeInfo);
 
+        log.info("沙箱最终输出: {}", executeCodeResponse);
         return executeCodeResponse;
     }
 

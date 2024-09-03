@@ -24,7 +24,7 @@ public class MainController {
 
     private static final String AUTH_REQUEST_SECRET = "secret";
 
-    @Resource(name = "javaNativeCodeSandbox")
+    @Resource(name = "javaDockerCodeSandbox")
     private CodeSandbox codeSandbox;
 
     @GetMapping("/health")

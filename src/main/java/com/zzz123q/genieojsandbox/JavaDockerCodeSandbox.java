@@ -23,14 +23,20 @@ import com.github.dockerjava.api.model.Statistics;
 import com.github.dockerjava.api.model.StreamType;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.DockerClientBuilder;
+import com.zzz123q.genieojsandbox.model.ExecuteCodeResponse;
 import com.zzz123q.genieojsandbox.model.ExecuteMessage;
+import com.zzz123q.genieojsandbox.model.JudgeInfo;
+
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.StrUtil;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Java代码沙箱Docker实现
  */
 @Component
+@Slf4j
 public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
 
     private static final Long TIME_OUT = 5000L;
@@ -114,7 +120,7 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
                     @Override
                     public void onNext(Statistics statistics) {
                         Long usage = statistics.getMemoryStats().getUsage();
-                        System.out.println("内存占用: " + usage);
+                        // System.out.println("内存占用: " + usage);
                         memory[0] = Math.max(memory[0], usage);
                         super.onNext(statistics);
                     }
@@ -132,11 +138,15 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
                     public void onNext(Frame frame) {
                         StreamType streamType = frame.getStreamType();
                         if (StreamType.STDERR.equals(streamType)) {
-                            errorMessage[0] = new String(frame.getPayload());
-                            System.out.println("错误结果输出:" + errorMessage[0]);
+                            String payload = new String(frame.getPayload());
+                            payload = payload.substring(0, payload.length() - 1);
+                            System.out.println("错误结果输出:" + payload);
+                            errorMessage[0] = payload;
                         } else {
-                            message[0] = new String(frame.getPayload());
-                            System.out.println("结果输出:" + message[0]);
+                            String payload = new String(frame.getPayload());
+                            payload = payload.substring(0, payload.length() - 1);
+                            System.out.println("结果输出:" + payload);
+                            message[0] = payload;
                         }
                         super.onNext(frame);
                     }
@@ -152,6 +162,7 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
                 stopWatch.stop();
                 time = stopWatch.getLastTaskTimeMillis();
 
+                Thread.sleep(1000);
                 statsCmd.close();
 
             } catch (InterruptedException e) {
@@ -166,6 +177,44 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
             executeMessageList.add(executeMessage);
         }
 
+        log.info("程序运行结果为: {}", executeMessageList);
         return executeMessageList;
+    }
+
+    @Override
+    public ExecuteCodeResponse getOutputResponse(List<ExecuteMessage> executeMessageList) {
+        ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();
+        List<String> outputList = new ArrayList<>();
+        Long maxTime = 0L;
+        Long maxMemory = 0L;
+        for (ExecuteMessage message : executeMessageList) {
+            String errorMessage = message.getErrorMessage();
+            Long time = message.getTime();
+            Long memory = message.getMemory();
+            if (StrUtil.isNotBlank(errorMessage)) {
+                executeCodeResponse.setMessage(errorMessage);
+                break;
+            }
+            outputList.add(message.getMessage());
+            if (time != null) {
+                maxTime = Math.max(maxTime, time);
+            }
+            if (memory != null) {
+                maxMemory = Math.max(maxMemory, memory);
+            }
+        }
+        if (outputList.size() == executeMessageList.size()) {
+            executeCodeResponse.setStatus(2);
+        } else {
+            executeCodeResponse.setStatus(3);
+        }
+        executeCodeResponse.setOutputList(outputList);
+        JudgeInfo judgeInfo = new JudgeInfo();
+        judgeInfo.setTime(maxTime);
+        judgeInfo.setMemory(maxMemory);
+        executeCodeResponse.setJudgeInfo(judgeInfo);
+
+        log.info("沙箱最终输出: {}", executeCodeResponse);
+        return executeCodeResponse;
     }
 }
