@@ -4,6 +4,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,8 +27,12 @@ public class MainController {
 
     private static final String AUTH_REQUEST_SECRET = "secret";
 
-    @Resource(name = "javaDockerCodeSandbox")
     private CodeSandbox codeSandbox;
+
+    @Autowired
+    public void setCodeSandbox(ApplicationContext context, @Value("${codesandbox.name}") String name) {
+        this.codeSandbox = (CodeSandbox) context.getBean(name);
+    }
 
     @GetMapping("/health")
     public String healthCheck() {

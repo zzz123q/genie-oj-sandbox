@@ -1,3 +1,7 @@
 # 应用服务 WEB 访问端口
 server:
   port: 8082
+
+# 代码沙箱配置
+codesandbox:
+  name: javaDockerCodeSandbox

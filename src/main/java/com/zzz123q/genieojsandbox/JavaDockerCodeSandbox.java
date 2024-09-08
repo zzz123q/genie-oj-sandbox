@@ -1,6 +1,7 @@
 package com.zzz123q.genieojsandbox;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -134,6 +135,7 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
 
                 dockerClient.execStartCmd(execId).exec(new ResultCallback.Adapter<Frame>() {
 
+                    // TODO: 有时会分多段输出
                     @Override
                     public void onNext(Frame frame) {
                         StreamType streamType = frame.getStreamType();
@@ -175,6 +177,15 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate {
             executeMessage.setTime(time);
             executeMessage.setMemory(memory[0]);
             executeMessageList.add(executeMessage);
+        }
+
+        dockerClient.stopContainerCmd(containerId).exec();
+        dockerClient.removeContainerCmd(containerId).exec();
+        try {
+            dockerClient.close();
+        } catch (IOException e) {
+            log.error("关闭客户端时出现异常", e);
+            e.printStackTrace();
         }
 
         log.info("程序运行结果为: {}", executeMessageList);
